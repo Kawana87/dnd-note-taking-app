@@ -1,0 +1,17 @@
+{
+  "name": "Campaign Codex",
+  "short_name": "Codex",
+  "description": "Offline-first D&D campaign wiki with auto-linking NPCs, locations, quests, items, and more.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b2226",
+  "theme_color": "#0b2226",
+  "orientation": "any",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Campaign Codex</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2226">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Codex">
+<style>
+  :root{
+    --bg-0:#0b2226;
+    --bg-1:#0f2e33;
+    --bg-2:#123840;
+    --bg-3:#17444d;
+    --line:#1f5158;
+    --text:#e7f2ef;
+    --text-dim:#9fc3bd;
+    --accent:#3fae7c;
+    --accent-dim:#2c7a58;
+    --gold:#d4b46a;
+    --danger:#c9564f;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Georgia,"Iowan Old Style",serif;
+    background:linear-gradient(180deg,var(--bg-0),var(--bg-1) 40%,var(--bg-0));
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  a{color:var(--gold);}
+  button, input, textarea, select{
+    font-family:inherit;
+    color:var(--text);
+  }
+  button{
+    background:var(--bg-3);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 14px;
+    cursor:pointer;
+    font-size:14px;
+  }
+  button:hover{background:var(--accent-dim);}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#06231a;font-weight:600;}
+  button.primary:hover{background:var(--accent-dim);color:var(--text);}
+  button.danger{background:transparent;border-color:var(--danger);color:var(--danger);}
+  button.danger:hover{background:var(--danger);color:#fff;}
+  button.ghost{background:transparent;border-color:transparent;}
+  button.ghost:hover{background:var(--bg-3);}
+  input[type=text], input[type=url], input[type=search], textarea, select{
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 10px;
+    font-size:14px;
+    width:100%;
+  }
+  textarea{resize:vertical;min-height:120px;line-height:1.5;}
+  label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);margin:14px 0 4px;}
+  label:first-child{margin-top:0;}
+
+  header{
+    display:flex;align-items:center;gap:16px;
+    padding:10px 18px;
+    background:#081a1d;
+    border-bottom:2px solid var(--gold);
+    position:sticky;top:0;z-index:20;
+  }
+  header h1{font-size:20px;margin:0;white-space:nowrap;letter-spacing:.02em;}
+  header h1 .crest{color:var(--gold);margin-right:6px;}
+  header .searchWrap{flex:1;max-width:420px;}
+  header .spacer{flex:1;}
+  header .headerBtns{display:flex;gap:8px;}
+
+  .layout{display:flex;flex:1;min-height:0;}
+  nav.sidebar{
+    width:64px;flex-shrink:0;
+    background:var(--bg-1);
+    border-right:1px solid var(--line);
+    padding:14px 0;
+    overflow-y:visible;
+    overflow-x:visible;
+    position:relative;
+    z-index:40;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+  }
+  nav.sidebar button.navBtn{
+    position:relative;
+    width:46px;height:46px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:none;border:none;border-radius:10px;
+    padding:0;color:var(--text-dim);
+  }
+  nav.sidebar button.navBtn .navIcon{width:22px;height:22px;display:flex;}
+  nav.sidebar button.navBtn .navIcon svg{width:100%;height:100%;}
+  nav.sidebar button.navBtn:hover, nav.sidebar button.navBtn.active{background:var(--bg-3);color:var(--gold);}
+  nav.sidebar button.navBtn .flyout{
+    position:absolute;left:100%;top:50%;
+    transform:translate(-8px,-50%);
+    display:flex;align-items:center;gap:10px;
+    background:var(--accent);color:#06231a;
+    padding:7px 18px 7px 7px;border-radius:0 24px 24px 0;
+    white-space:nowrap;opacity:0;pointer-events:none;
+    transition:opacity .15s ease,transform .15s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,0.45);
+    margin-left:1px;
+  }
+  nav.sidebar button.navBtn:hover .flyout{opacity:1;transform:translate(0,-50%);pointer-events:auto;}
+  .flyoutBadge{
+    width:30px;height:30px;border-radius:50%;background:#fff;color:var(--accent-dim);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .flyoutBadge svg{width:17px;height:17px;}
+  .flyoutLabel{font-weight:700;font-size:14px;color:#06231a;}
+  .flyoutCount{font-size:11px;background:rgba(6,35,26,0.22);padding:1px 7px;border-radius:10px;color:#06231a;}
+  .navDivider{width:30px;height:1px;background:var(--line);margin:5px 0 8px;flex-shrink:0;}
+
+  main{flex:1;min-width:0;display:flex;overflow:hidden;}
+  .listPane{
+    width:300px;flex-shrink:0;
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    background:rgba(255,255,255,0.015);
+  }
+  .listPane .listHead{padding:12px;border-bottom:1px solid var(--line);display:flex;gap:8px;}
+  .listPane .listHead input{flex:1;}
+  .listItems{overflow-y:auto;flex:1;}
+  .listItem{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;
+  }
+  .listItem:hover{background:var(--bg-2);}
+  .listItem.active{background:var(--bg-3);border-left:3px solid var(--gold);}
+  .listItem .itemInfo{min-width:0;flex:1;}
+  .listItem .name{font-weight:600;font-size:14.5px;}
+  .listItem .sub{font-size:12px;color:var(--text-dim);margin-top:2px;}
+
+  .token{
+    border-radius:50%;object-fit:cover;background:var(--bg-3);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--gold);border:2px solid var(--line);
+    overflow:hidden;
+  }
+  .token.sm{width:36px;height:36px;font-size:13px;margin-top:1px;}
+  .token.lg{width:140px;height:140px;font-size:40px;border-color:var(--gold);border-width:3px;}
+  .tokenCenter{display:flex;justify-content:center;margin-bottom:16px;}
+  .badge{
+    display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:20px;
+    background:var(--bg-3);color:var(--text-dim);border:1px solid var(--line);margin-top:4px;
+  }
+  .badge.status-active,.badge.status-alive,.badge.status-allied{color:#7be0a8;border-color:#2c7a58;}
+  .badge.status-completed{color:#7cc4ff;border-color:#2c5a7a;}
+  .badge.status-dead,.badge.status-failed,.badge.status-hostile{color:#ff9a90;border-color:#7a2c2c;}
+  .badge.status-disbanded,.badge.status-missing,.badge.status-unknown{color:#d9c98a;border-color:#7a6a2c;}
+
+  .detailPane{flex:1;overflow-y:auto;padding:24px 32px;min-width:0;}
+  .backToList{
+    display:none;align-items:center;gap:6px;margin-bottom:14px;
+    color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;
+  }
+  .backToList:hover{color:#fff;}
+
+  /* ---- Mobile / narrow portrait layout ---- */
+  @media (max-width:820px){
+    .listPane{width:100%;}
+    .detailPane{padding:18px 16px;}
+    .layout:not(.detail-open) .detailPane{display:none;}
+    .layout.detail-open .listPane{display:none !important;}
+    .backToList{display:inline-flex;}
+    header{flex-wrap:wrap;row-gap:8px;padding:10px 12px;}
+    header h1{font-size:16px;flex:1 1 auto;}
+    header .searchWrap{order:3;flex:1 1 100%;max-width:none;}
+    header .spacer{display:none;}
+    header .headerBtns{order:2;flex:0 0 auto;gap:6px;}
+    header .headerBtns button{padding:6px 9px;font-size:12px;}
+    .token.lg{width:96px;height:96px;font-size:30px;}
+    .dashGrid{grid-template-columns:repeat(2,1fr) !important;gap:12px;}
+    .statCard{align-items:center;text-align:center;padding:18px 12px !important;}
+    .statCard .statIcon{width:30px;height:30px;margin:0 0 10px !important;}
+    .layout.detail-open .detailPane{animation:ccSlideIn .22s ease;}
+    .layout:not(.detail-open) .listPane{animation:ccSlideIn .22s ease;}
+  }
+  @keyframes ccSlideIn{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:translateX(0);}}
+  .empty{color:var(--text-dim);padding:40px;text-align:center;}
+  .entityHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .entityHeader h2{margin:0 0 4px 0;font-size:26px;color:var(--gold);}
+  .entityHeader .typeTag{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);}
+  .entityHeader .actions{display:flex;gap:8px;}
+  .content-body p{line-height:1.7;margin:0 0 12px;}
+  .content-body{margin-top:10px;}
+  a.wiki-link{
+    color:var(--gold);text-decoration:underline dotted;text-underline-offset:3px;font-weight:600;
+  }
+  a.wiki-link:hover{color:#fff;}
+  .section{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;}
+  .section h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);}
+  .chipRow{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;
+    display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--text);
+  }
+  .chip:hover{border-color:var(--gold);}
+  .chip .tt{font-size:10px;color:var(--text-dim);text-transform:uppercase;}
+  .attachment{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:6px;
+  }
+  .attachment a{color:var(--text);text-decoration:none;font-size:13.5px;}
+  .attachment .meta{font-size:11px;color:var(--text-dim);}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:flex-start;justify-content:center;
+    padding:40px 16px;overflow-y:auto;z-index:100;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius);width:100%;max-width:640px;
+    padding:22px 26px 26px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h2{margin-top:0;}
+  .modalActions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+  .fileList{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .fileRow{display:flex;align-items:center;justify-content:space-between;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;}
+  .fileRow button{padding:2px 8px;font-size:12px;}
+  .hint{font-size:12px;color:var(--text-dim);margin-top:4px;}
+
+  .dashGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:18px;}
+  .statCard{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;}
+  .statCard:hover{border-color:var(--gold);}
+  .statCard{display:flex;flex-direction:column;}
+  .statCard .statIcon{width:26px;height:26px;color:var(--gold);margin-bottom:10px;}
+  .statCard .statIcon svg{width:100%;height:100%;}
+  .statCard .num{font-size=28px;}
+  .statCard .num{font-size:28px;font-weight:700;color:var(--gold);}
+  .statCard .lbl{font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;}
+  .recentList{margin-top:10px;}
+  .recentRow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .recentRow a{color:var(--text);}
+  .toast{
+    position:fixed;bottom:20px;right:20px;background:var(--bg-3);border:1px solid var(--gold);
+    padding:10px 16px;border-radius:6px;z-index:200;font-size:14px;opacity:0;transform:translateY(10px);
+    transition:opacity .2s,transform .2s;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:var(--bg-3);border-radius:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  .welcomeNote{background:var(--bg-2);border:1px dashed var(--gold);border-radius:var(--radius);padding:16px;margin-bottom:20px;font-size:13.5px;line-height:1.6;}
+
+  .locTreeItem{position:relative;}
+  .timelineWrap{position:relative;padding-left:26px;}
+  .timelineWrap::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line);}
+  .timelineItem{position:relative;margin-bottom:22px;}
+  .timelineDot{position:absolute;left:-26px;top:4px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg-0);}
+  .timelineDate{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;}
+  .timelineTitle{display:block;font-size:16px;font-weight:700;color:var(--gold);margin:2px 0 4px;text-decoration:none;}
+  .timelineTitle:hover{text-decoration:underline;}
+  .timelineSnippet{font-size:13.5px;color:var(--text-dim);line-height:1.5;}
+
+  .commentItem{background:var(--bg-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px;}
+  .commentMeta{font-size:12.5px;margin-bottom:4px;}
+  .commentText{font-size:14px;line-height:1.5;white-space:pre-wrap;}
+  #commentForm textarea{min-height:70px;}
+  #commentForm input{margin-bottom:8px;}
+
+  .skull{margin-right:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="crest">&#9876;</span>Campaign Codex</h1>
+  <div class="searchWrap">
+    <input type="search" id="globalSearch" placeholder="Search everything... (press Enter)">
+  </div>
+  <div class="spacer"></div>
+  <div class="headerBtns">
+    <button class="ghost" id="btnExport" title="Download a full backup as JSON">Export</button>
+    <button class="ghost" id="btnImport" title="Restore or merge from a JSON backup">Import</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
+    <button class="ghost" id="btnClear" title="Delete everything">Clear All</button>
+  </div>
+</header>
+
+<div class="layout" id="appLayout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main>
+    <div class="listPane" id="listPane" style="display:none;"></div>
+    <div class="detailPane" id="detailPane"></div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CAMPAIGN CODEX
+   Single-file, offline-first D&D campaign wiki.
+   All data lives in this browser's IndexedDB, on this device,
+   scoped to wherever this file is opened from. Use Export
+   regularly to back up, and Import to restore or move devices.
+   ============================================================ */
+
+const TYPES = {
+  npc:      { label:"NPCs",      singular:"NPC",      order:1 },
+  player:   { label:"Players",   singular:"Player",   order:2 },
+  faction:  { label:"Factions",  singular:"Faction",  order:3 },
+  location: { label:"Locations", singular:"Location", order:4 },
+  item:     { label:"Items",     singular:"Item",      order:5 },
+  quest:    { label:"Quests",    singular:"Quest",     order:6 },
+  lore:     { label:"Lore",      singular:"Lore Entry", order:7 },
+  note:     { label:"Notes",     singular:"Note",      order:8 },
+};
+
+const ICONS = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>',
+  timeline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  npc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 0 1 16 0"/><path d="M4 16h16v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3z"/><path d="M9.5 16v-2.5a2.5 2.5 0 0 1 5 0V16"/></svg>',
+  player: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>',
+  faction: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3.5v5.5c0 5-3.5 8.8-8 11-4.5-2.2-8-6-8-11V5.5L12 2z"/></svg>',
+  location: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  item: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M3 10a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5"/><rect x="9.5" y="10" width="5" height="3" rx="0.5"/></svg>',
+  quest: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7.5" x2="12" y2="13"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/></svg>',
+  lore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/><path d="M14 3v5h5"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
+};
+
+const STATUS_OPTIONS = {
+  npc:      ["Alive","Dead","Missing","Unknown"],
+  faction:  ["Active","Allied","Hostile","Disbanded"],
+  quest:    ["Not Started","Active","Completed","Failed"],
+  player:   [],
+  location: [],
+  lore:     [],
+  note:     [],
+};
+
+function fieldsFor(type){
+  const base = [
+    {key:"name", label: type==="lore" ? "Title" : (type==="note" ? "Title" : "Name"), type:"text", required:true},
+  ];
+  const tail = [
+    {key:"aliases", label:"Also known as (comma separated)", type:"text"},
+    {key:"tags", label:"Tags (comma separated)", type:"text"},
+    {key:"content", label:"Description / Notes", type:"textarea"},
+    {key:"image", label:"Image", type:"image"},
+    {key:"attachments", label: type==="player" ? "Attachments (character sheet PDF, image, JSON export, etc.)" : "Attachments", type:"file"},
+  ];
+  if(type==="npc"){
+    return [...base,
+      {key:"subtitle", label:"Role / Title", type:"text"},
+      {key:"status", label:"Status", type:"select", options:STATUS_OPTIONS.npc},
+      ...tail];
+  }
+  if(type==="player"){
+    return [...base,
+      {key:"subtitle", label:"Player name / Class & Race", type:"text"},
+      {key:"dndbeyondUrl", label:"D&D Beyond character sheet URL", type:"url"},
+      ...tail];
+  }
+  if(type==="faction"){
+    return [...base,
+      {key:"subtitle", label:"Motto / Type", type:"text"},
+      {key:"status", label:"Status", type:"select", options:STATUS_OPTIONS.faction},
+      ...tail];
+  }
+  if(type==="location"){
+    return [...base,
+      {key:"subtitle", label:"Region / Type", type:"text"},
+      {key:"parentId", label:"Parent location", type:"locationSelect"},
+      ...tail];
+  }
+  if(type==="item"){
+    return [...base,
+      {key:"subtitle", label:"Quantity / Rarity", type:"text"},
+      ...tail];
+  }
+  if(type==="quest"){
+    return [...base,
+      {key:"subtitle", label:"Quest giver"},
+      {key:"status", label:"Status", type:"select", options:STATUS_OPTIONS.quest},
+      ...tail];
+  }
+  if(type==="lore"){
+    return [...base,
+      {key:"subtitle", label:"Category (History, Religion, Geography...)", type:"text"},
+      ...tail];
+  }
+  // note
+  return [...base,
+    {key:"subtitle", label:"Session / Date", type:"text"},
+    ...tail];
+}
+
+/* ---------------- IndexedDB layer ---------------- */
+const DB_NAME = "campaignCodexDB";
+const DB_STORE = "entities";
+let dbPromise = null;
+function openDB(){
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(DB_STORE)){
+        db.createObjectStore(DB_STORE, {keyPath:"id"});
+      }
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+  return dbPromise;
+}
+async function dbGetAll(){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(DB_STORE,"readonly");
+    const store = tx.objectStore(DB_STORE);
+    const req = store.getAll();
+    req.onsuccess = ()=>resolve(req.result || []);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function dbPut(entity){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(DB_STORE,"readwrite");
+    tx.objectStore(DB_STORE).put(entity);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function dbDelete(id){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(DB_STORE,"readwrite");
+    tx.objectStore(DB_STORE).delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function dbClear(){
+  const db = await openDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(DB_STORE,"readwrite");
+    tx.objectStore(DB_STORE).clear();
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+
+/* ---------------- App state ---------------- */
+const state = {
+  entities: [],
+  currentType: null,
+  currentId: null,
+  view: "dashboard", // dashboard | list | entity | search
+  searchQuery: "",
+};
+
+function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function byId(id){ return state.entities.find(e=>e.id===id); }
+function ofType(type){ return state.entities.filter(e=>e.type===type).sort((a,b)=>a.name.localeCompare(b.name)); }
+
+/* ---------------- Text rendering / auto-linking ---------------- */
+function escapeHtml(str){
+  return (str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function escapeAttr(str){
+  return (str||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;");
+}
+function escapeRegex(str){
+  return str.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+}
+function initials(name){
+  const parts = (name||"?").trim().split(/\s+/).filter(Boolean);
+  if(parts.length===0) return "?";
+  if(parts.length===1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+}
+function tokenHtml(entity, sizeClass){
+  if(entity.image){
+    return `<img class="token ${sizeClass}" src="${entity.image}" alt="${escapeAttr(entity.name)} token">`;
+  }
+  return `<div class="token placeholder ${sizeClass}">${escapeHtml(initials(entity.name))}</div>`;
+}
+function getAuthorName(){ return localStorage.getItem("ccx_author") || ""; }
+function setAuthorName(n){ localStorage.setItem("ccx_author", n); }
+function renderComments(ent){
+  const list = ent.comments || [];
+  if(!list.length) return `<div class="hint">No comments yet.</div>`;
+  return list.slice().sort((a,b)=>a.createdAt-b.createdAt).map(c=>`
+    <div class="commentItem">
+      <div class="commentMeta"><strong>${escapeHtml(c.author||"Anonymous")}</strong> <span class="hint">${new Date(c.createdAt).toLocaleString()}</span></div>
+      <div class="commentText">${escapeHtml(c.text)}</div>
+    </div>`).join("");
+}
+function buildLinkMap(excludeId){
+  const map = new Map();
+  state.entities.forEach(e=>{
+    if(e.id === excludeId) return;
+    const names = [e.name, ...(e.aliases ? e.aliases.split(",").map(a=>a.trim()).filter(Boolean) : [])];
+    names.forEach(n=>{
+      if(n && n.trim().length>1){
+        const key = n.trim().toLowerCase();
+        if(!map.has(key)) map.set(key, e);
+      }
+    });
+  });
+  return map;
+}
+function autoLink(escapedText, excludeId){
+  const map = buildLinkMap(excludeId);
+  if(map.size===0) return escapedText;
+  const keys = Array.from(map.keys()).sort((a,b)=>b.length-a.length);
+  const pattern = keys.map(escapeRegex).join("|");
+  const re = new RegExp("\\b(" + pattern + ")\\b","gi");
+  return escapedText.replace(re, (match)=>{
+    const e = map.get(match.toLowerCase());
+    if(!e) return match;
+    return `<a href="#/entity/${e.id}" class="wiki-link" title="${escapeAttr(TYPES[e.type].singular)}: click to open">${match}</a>`;
+  });
+}
+function mdInline(html){
+  html = html.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  html = html.replace(/(^|[^*])\*([^*\n]+)\*/g,"$1<em>$2</em>");
+  return html.split(/\n{2,}/).filter(p=>p.trim().length).map(p=>"<p>"+p.replace(/\n/g,"<br>")+"</p>").join("");
+}
+function renderContentHtml(text, excludeId){
+  if(!text || !text.trim()) return "<p class='hint'>No description yet.</p>";
+  const escaped = escapeHtml(text);
+  const linked = autoLink(escaped, excludeId);
+  return mdInline(linked);
+}
+// entities this entity's content mentions (outgoing links)
+function outgoingMentions(entity){
+  const map = buildLinkMap(entity.id);
+  const found = new Map();
+  const haystack = (entity.content||"") + " " + (entity.subtitle||"");
+  map.forEach((e,key)=>{
+    const re = new RegExp("\\b"+escapeRegex(key)+"\\b","i");
+    if(re.test(haystack)) found.set(e.id,e);
+  });
+  return Array.from(found.values());
+}
+// entities that mention this one (backlinks)
+function backlinks(entity){
+  const names = [entity.name, ...(entity.aliases ? entity.aliases.split(",").map(a=>a.trim()).filter(Boolean) : [])].filter(Boolean);
+  if(!names.length) return [];
+  const pattern = names.map(escapeRegex).join("|");
+  const re = new RegExp("\\b("+pattern+")\\b","i");
+  return state.entities.filter(other=>{
+    if(other.id===entity.id) return false;
+    const hay = (other.content||"") + " " + (other.subtitle||"");
+    return re.test(hay);
+  });
+}
+
+/* ---------------- Router ---------------- */
+window.addEventListener("hashchange", route);
+function route(){
+  const hash = location.hash.replace(/^#\/?/, "");
+  const parts = hash.split("/").filter(Boolean);
+  if(parts.length===0){ state.view="dashboard"; state.currentType=null; state.currentId=null; }
+  else if(parts[0]==="type" && parts[1]){ state.view="list"; state.currentType=parts[1]; state.currentId=parts[2]||null; state.view = parts[2] ? "entity" : "list"; }
+  else if(parts[0]==="entity" && parts[1]){
+    const ent = byId(parts[1]);
+    state.view="entity"; state.currentId=parts[1]; state.currentType = ent ? ent.type : null;
+  }
+  else if(parts[0]==="search"){ state.view="search"; state.searchQuery = decodeURIComponent(parts[1]||""); }
+  else if(parts[0]==="timeline"){ state.view="timeline"; state.currentType=null; state.currentId=null; }
+  else { state.view="dashboard"; }
+  render();
+}
+
+function statusBadgeHtml(status){
+  if(!status) return "";
+  const cls = status.toLowerCase().replace(/\s+/g,'-');
+  const skull = status==="Dead" ? '<span class="skull">&#9760;</span>' : "";
+  return `<span class="badge status-${cls}">${skull}${escapeHtml(status)}</span>`;
+}
+function locationChildren(parentId){
+  return ofType("location").filter(l => (l.parentId||"") === (parentId||"")).sort((a,b)=>a.name.localeCompare(b.name));
+}
+
+/* ---------------- Rendering ---------------- */
+const sidebarEl = document.getElementById("sidebar");
+const listPaneEl = document.getElementById("listPane");
+const detailPaneEl = document.getElementById("detailPane");
+const layoutEl = document.getElementById("appLayout");
+
+function navBtnHtml(iconKey, label, navHash, active, count){
+  return `<button class="navBtn ${active?'active':''}" data-nav="${navHash}">
+      <span class="navIcon">${ICONS[iconKey]}</span>
+      <span class="flyout">
+        <span class="flyoutBadge">${ICONS[iconKey]}</span>
+        <span class="flyoutLabel">${label}</span>
+        ${count!==undefined ? `<span class="flyoutCount">${count}</span>` : ""}
+      </span>
+    </button>`;
+}
+function renderSidebar(){
+  let html = navBtnHtml("dashboard", "Home", "#/", state.view==="dashboard");
+  html += navBtnHtml("timeline", "Timeline", "#/timeline", state.view==="timeline");
+  html += '<div class="navDivider"></div>';
+  Object.keys(TYPES).sort((a,b)=>TYPES[a].order-TYPES[b].order).forEach(t=>{
+    html += navBtnHtml(t, TYPES[t].label, `#/type/${t}`, state.currentType===t, ofType(t).length);
+  });
+  sidebarEl.innerHTML = html;
+  sidebarEl.querySelectorAll("[data-nav]").forEach(b=>{
+    b.addEventListener("click", ()=>{ location.hash = b.dataset.nav; });
+  });
+}
+
+function renderList(){
+  const type = state.currentType;
+  const items = ofType(type);
+  listPaneEl.style.display = "flex";
+  listPaneEl.style.flexDirection = "column";
+  listPaneEl.innerHTML = `
+    <div class="listHead">
+      <input type="text" id="listFilter" placeholder="Filter ${TYPES[type].label.toLowerCase()}...">
+      <button class="primary" id="btnNew">+ New</button>
+    </div>
+    <div class="listItems" id="listItems"></div>
+  `;
+  function itemRowHtml(e, depth){
+    const indent = depth ? `style="padding-left:${14+depth*18}px;"` : "";
+    return `
+      <div class="listItem ${depth!==undefined?'locTreeItem':''} ${e.id===state.currentId?'active':''}" data-id="${e.id}" ${indent}>
+        ${tokenHtml(e,'sm')}
+        <div class="itemInfo">
+          <div class="name">${escapeHtml(e.name)}</div>
+          ${e.subtitle ? `<div class="sub">${escapeHtml(e.subtitle)}</div>` : ""}
+          ${statusBadgeHtml(e.status)}
+        </div>
+      </div>`;
+  }
+  function renderLocationNode(loc, depth){
+    const kids = locationChildren(loc.id);
+    return itemRowHtml(loc, depth) + kids.map(k=>renderLocationNode(k, depth+1)).join("");
+  }
+  function draw(filter){
+    const f = (filter||"").toLowerCase();
+    const wrap = document.getElementById("listItems");
+    if(type==="location" && !f){
+      const roots = ofType("location").filter(l => !l.parentId || !byId(l.parentId));
+      if(roots.length===0){
+        wrap.innerHTML = `<div class="empty">No locations yet.<br>Click "+ New" to add one.</div>`;
+      } else {
+        wrap.innerHTML = roots.map(r=>renderLocationNode(r,0)).join("");
+      }
+    } else {
+      const filtered = items.filter(e => !f || e.name.toLowerCase().includes(f) || (e.subtitle||"").toLowerCase().includes(f) || (e.tags||"").toLowerCase().includes(f));
+      if(filtered.length===0){
+        wrap.innerHTML = `<div class="empty">No ${TYPES[type].label.toLowerCase()} yet.<br>Click "+ New" to add one.</div>`;
+        return;
+      }
+      wrap.innerHTML = filtered.map(e=>itemRowHtml(e)).join("");
+    }
+    wrap.querySelectorAll(".listItem").forEach(el=>{
+      el.addEventListener("click", ()=>{ location.hash = `#/entity/${el.dataset.id}`; });
+    });
+  }
+  draw("");
+  document.getElementById("listFilter").addEventListener("input", (e)=>draw(e.target.value));
+  document.getElementById("btnNew").addEventListener("click", ()=>openForm(type,null));
+}
+
+function renderEntity(){
+  const ent = byId(state.currentId);
+  if(!ent){
+    detailPaneEl.innerHTML = `<div class="empty">This entry doesn't exist (maybe it was deleted).</div>`;
+    return;
+  }
+  const mentions = outgoingMentions(ent);
+  const backs = backlinks(ent);
+  const tags = (ent.tags||"").split(",").map(t=>t.trim()).filter(Boolean);
+  const locParent = ent.type==="location" && ent.parentId ? byId(ent.parentId) : null;
+  const locKids = ent.type==="location" ? locationChildren(ent.id) : [];
+  detailPaneEl.innerHTML = `
+    ${state.currentType ? `<a class="backToList" href="#/type/${ent.type}">&larr; Back to ${TYPES[ent.type].label}</a>` : ""}
+    <div class="tokenCenter">${tokenHtml(ent,'lg')}</div>
+    <div class="entityHeader">
+      <div>
+        <div class="typeTag">${TYPES[ent.type].singular}</div>
+        <h2>${escapeHtml(ent.name)}</h2>
+        ${ent.subtitle ? `<div style="color:var(--text-dim)">${escapeHtml(ent.subtitle)}</div>` : ""}
+        ${statusBadgeHtml(ent.status)}
+      </div>
+      <div class="actions">
+        <button id="btnEdit">Edit</button>
+        <button class="danger" id="btnDelete">Delete</button>
+      </div>
+    </div>
+    ${ent.type==="player" && ent.dndbeyondUrl ? `<div style="margin:12px 0;"><a class="chip" href="${escapeAttr(ent.dndbeyondUrl)}" target="_blank" rel="noopener">&#9876; Open D&D Beyond sheet &#8599;</a></div>` : ""}
+    <div class="content-body">${renderContentHtml(ent.content, ent.id)}</div>
+    ${tags.length ? `<div class="section"><h3>Tags</h3><div class="chipRow">${tags.map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join("")}</div></div>` : ""}
+    ${ent.attachments && ent.attachments.length ? `<div class="section"><h3>Attachments</h3>${ent.attachments.map(a=>`
+      <div class="attachment">
+        <a href="${a.dataUrl}" download="${escapeAttr(a.name)}">&#128206; ${escapeHtml(a.name)}</a>
+        <span class="meta">${Math.round(a.size/1024)} KB</span>
+      </div>`).join("")}</div>` : ""}
+    ${locParent ? `<div class="section"><h3>Part of</h3><div class="chipRow"><a class="chip" href="#/entity/${locParent.id}">${escapeHtml(locParent.name)}</a></div></div>` : ""}
+    ${locKids.length ? `<div class="section"><h3>Contains</h3><div class="chipRow">${locKids.map(k=>`<a class="chip" href="#/entity/${k.id}">${escapeHtml(k.name)}</a>`).join("")}</div></div>` : ""}
+    ${mentions.length ? `<div class="section"><h3>Mentions</h3><div class="chipRow">${mentions.map(m=>`<a class="chip" href="#/entity/${m.id}">${escapeHtml(m.name)}<span class="tt">${TYPES[m.type].singular}</span></a>`).join("")}</div></div>` : ""}
+    ${backs.length ? `<div class="section"><h3>Mentioned in</h3><div class="chipRow">${backs.map(m=>`<a class="chip" href="#/entity/${m.id}">${escapeHtml(m.name)}<span class="tt">${TYPES[m.type].singular}</span></a>`).join("")}</div></div>` : ""}
+    <div class="section">
+      <h3>Comments</h3>
+      <div id="commentsList">${renderComments(ent)}</div>
+      <form id="commentForm">
+        <input type="text" id="commentAuthor" placeholder="Your name" value="${escapeAttr(getAuthorName())}">
+        <textarea id="commentText" rows="3" placeholder="Add a comment..."></textarea>
+        <button type="submit" class="primary" style="margin-top:4px;">Post comment</button>
+      </form>
+    </div>
+    <div class="hint" style="margin-top:24px;">Last updated ${new Date(ent.updatedAt).toLocaleString()}</div>
+  `;
+  document.getElementById("commentForm").addEventListener("submit", async (ev)=>{
+    ev.preventDefault();
+    const author = document.getElementById("commentAuthor").value.trim() || "Anonymous";
+    const text = document.getElementById("commentText").value.trim();
+    if(!text) return;
+    setAuthorName(author);
+    const fresh = byId(ent.id) || ent;
+    const updated = {...fresh, comments:[...(fresh.comments||[]), {id:uid(), author, text, createdAt:Date.now()}]};
+    try{
+      await dbPut(updated);
+      const idx = state.entities.findIndex(e=>e.id===updated.id);
+      if(idx>=0) state.entities[idx]=updated;
+      toast("Comment posted.");
+      renderEntity();
+    }catch(e){ alert("Couldn't post comment: " + e.message); }
+  });
+  document.getElementById("btnEdit").addEventListener("click", ()=>openForm(ent.type, ent.id));
+  document.getElementById("btnDelete").addEventListener("click", ()=>{
+    if(confirm(`Delete "${ent.name}"? This can't be undone.`)){
+      dbDelete(ent.id).then(async ()=>{
+        state.entities = state.entities.filter(e=>e.id!==ent.id);
+        toast("Deleted.");
+        location.hash = `#/type/${ent.type}`;
+      });
+    }
+  });
+  // also refresh list pane to show selection + in case type view
+  if(state.currentType) renderList();
+}
+
+function renderDashboard(){
+  listPaneEl.style.display = "none";
+  const counts = Object.keys(TYPES).map(t=>({t, n: ofType(t).length}));
+  const recent = [...state.entities].sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,10);
+  detailPaneEl.innerHTML = `
+    ${state.entities.length===0 ? `<div class="welcomeNote">
+      <strong>Welcome to your Campaign Codex.</strong><br>
+      This is a self-contained wiki for your D&D campaign that lives entirely in this browser &mdash; nothing is sent anywhere.
+      Add NPCs, Players, Factions, Locations, Items, Quests, Lore and session Notes from the icons on the left &mdash; hover an icon to see its label.
+      Whenever you mention an existing entry's name inside another entry's description, it will automatically turn into a clickable link. Locations can be nested under each other, and the Timeline tab lines up your session Notes in order.
+      Use <strong>Export</strong> regularly to save a backup file, and <strong>Import</strong> to restore it or move to another device/browser.
+    </div>` : ""}
+    <h2 style="color:var(--gold);margin-top:0;">Overview</h2>
+    <div class="dashGrid">
+      ${counts.map(c=>`<div class="statCard" data-nav="#/type/${c.t}"><div class="statIcon">${ICONS[c.t]}</div><div class="num">${c.n}</div><div class="lbl">${TYPES[c.t].label}</div></div>`).join("")}
+    </div>
+    <div class="section">
+      <h3>Recently updated</h3>
+      <div class="recentList">
+        ${recent.length ? recent.map(e=>`<div class="recentRow"><a href="#/entity/${e.id}">${escapeHtml(e.name)} <span class="hint">&mdash; ${TYPES[e.type].singular}</span></a><span class="hint">${new Date(e.updatedAt).toLocaleDateString()}</span></div>`).join("") : `<div class="hint">Nothing yet.</div>`}
+      </div>
+    </div>
+  `;
+  detailPaneEl.querySelectorAll("[data-nav]").forEach(el=>el.addEventListener("click", ()=>location.hash = el.dataset.nav));
+}
+
+function renderSearch(){
+  listPaneEl.style.display = "none";
+  const q = state.searchQuery.toLowerCase().trim();
+  const results = q ? state.entities.filter(e =>
+    e.name.toLowerCase().includes(q) ||
+    (e.subtitle||"").toLowerCase().includes(q) ||
+    (e.content||"").toLowerCase().includes(q) ||
+    (e.tags||"").toLowerCase().includes(q)
+  ) : [];
+  detailPaneEl.innerHTML = `
+    <h2 style="color:var(--gold);">Search results for "${escapeHtml(state.searchQuery)}"</h2>
+    <div class="recentList">
+      ${results.length ? results.map(e=>`
+        <div class="recentRow">
+          <a href="#/entity/${e.id}">${escapeHtml(e.name)} <span class="hint">&mdash; ${TYPES[e.type].singular}</span></a>
+        </div>`).join("") : `<div class="hint">No matches.</div>`}
+    </div>
+  `;
+}
+
+function renderTimeline(){
+  listPaneEl.style.display = "none";
+  const notes = ofType("note").slice().sort((a,b)=>{
+    const da = Date.parse(a.subtitle), db = Date.parse(b.subtitle);
+    if(!isNaN(da) && !isNaN(db)) return da-db;
+    return (a.createdAt||0) - (b.createdAt||0);
+  });
+  detailPaneEl.innerHTML = `
+    <h2 style="color:var(--gold);margin-top:0;">Timeline</h2>
+    <div class="hint" style="margin-bottom:18px;">Your session Notes, in order. Give a Note a date or session number in its "Session / Date" field to place it precisely.</div>
+    <div class="timelineWrap">
+      ${notes.length ? notes.map(n=>`
+        <div class="timelineItem">
+          <div class="timelineDot"></div>
+          <div class="timelineBody">
+            <div class="timelineDate">${escapeHtml(n.subtitle || "Undated")}</div>
+            <a class="timelineTitle" href="#/entity/${n.id}">${escapeHtml(n.name)}</a>
+            <div class="timelineSnippet">${escapeHtml((n.content||"").slice(0,180))}${(n.content||"").length>180?"…":""}</div>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">No session notes yet. Add one from the Notes tab.</div>`}
+    </div>
+  `;
+}
+
+function render(){
+  renderSidebar();
+  if(state.view==="dashboard") renderDashboard();
+  else if(state.view==="timeline") renderTimeline();
+  else if(state.view==="list"){ listPaneEl.style.display="flex"; renderList(); detailPaneEl.innerHTML = `<div class="empty">Select an entry on the left, or create a new one.</div>`; }
+  else if(state.view==="entity"){ if(state.currentType){ renderList(); } else { listPaneEl.style.display="none"; } renderEntity(); }
+  else if(state.view==="search") renderSearch();
+  // On narrow/mobile screens only one pane (list or detail) is shown at a time.
+  // "list" view (browsing a type with nothing selected) shows the list first;
+  // every other view (dashboard/timeline/search/entity) shows the detail pane.
+  if(layoutEl) layoutEl.classList.toggle("detail-open", state.view!=="list");
+}
+
+/* ---------------- Create / Edit form ---------------- */
+const overlayEl = document.getElementById("overlay");
+const modalEl = document.getElementById("modal");
+let pendingImage = null;
+let pendingAttachments = [];
+
+function fileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function openForm(type, id){
+  const existing = id ? byId(id) : null;
+  pendingImage = existing ? (existing.image || null) : null;
+  pendingAttachments = existing ? (existing.attachments ? [...existing.attachments] : []) : [];
+  const fields = fieldsFor(type);
+  let html = `<h2>${existing ? "Edit" : "New"} ${TYPES[type].singular}</h2><form id="entityForm">`;
+  fields.forEach(f=>{
+    const val = existing ? (existing[f.key] || "") : "";
+    if(f.type==="textarea"){
+      html += `<label>${f.label}</label><textarea name="${f.key}" rows="8">${escapeHtml(val)}</textarea>`;
+      if(f.key==="content") html += `<div class="hint">Tip: **bold**, *italic*, blank line = new paragraph. Mention another entry's name and it'll auto-link once saved.</div>`;
+    } else if(f.type==="select"){
+      html += `<label>${f.label}</label><select name="${f.key}"><option value="">&mdash;</option>${f.options.map(o=>`<option value="${o}" ${val===o?"selected":""}>${o}</option>`).join("")}</select>`;
+    } else if(f.type==="image"){
+      html += `<label>${f.label}</label><input type="file" id="imageInput" accept="image/*"><div id="imagePreviewWrap" style="margin-top:8px;"></div>`;
+    } else if(f.type==="file"){
+      html += `<label>${f.label}</label><input type="file" id="attachInput" multiple><div class="fileList" id="attachList"></div>`;
+    } else if(f.type==="url"){
+      html += `<label>${f.label}</label><input type="url" name="${f.key}" value="${escapeAttr(val)}" placeholder="https://www.dndbeyond.com/characters/...">`;
+    } else if(f.type==="locationSelect"){
+      const opts = ofType("location").filter(l => !existing || l.id !== existing.id);
+      html += `<label>${f.label}</label><select name="${f.key}"><option value="">&mdash; None (top level) &mdash;</option>${opts.map(l=>`<option value="${l.id}" ${val===l.id?"selected":""}>${escapeHtml(l.name)}</option>`).join("")}</select>`;
+    } else {
+      html += `<label>${f.label}</label><input type="text" name="${f.key}" value="${escapeAttr(val)}" ${f.required?"required":""}>`;
+    }
+  });
+  html += `<div class="modalActions">
+      <button type="button" id="btnCancel" class="ghost">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div></form>`;
+  modalEl.innerHTML = html;
+  overlayEl.classList.add("show");
+
+  function renderImagePreview(){
+    const wrap = document.getElementById("imagePreviewWrap");
+    if(!wrap) return;
+    wrap.innerHTML = pendingImage ? `<img src="${pendingImage}" style="max-width:140px;border-radius:6px;border:1px solid var(--line);display:block;"><button type="button" id="btnRemoveImg" style="margin-top:6px;">Remove image</button>` : "";
+    const rm = document.getElementById("btnRemoveImg");
+    if(rm) rm.addEventListener("click", ()=>{ pendingImage=null; renderImagePreview(); });
+  }
+  function renderAttachList(){
+    const wrap = document.getElementById("attachList");
+    if(!wrap) return;
+    wrap.innerHTML = pendingAttachments.map((a,i)=>`<div class="fileRow"><span>&#128206; ${escapeHtml(a.name)} <span class="hint">(${Math.round(a.size/1024)} KB)</span></span><button type="button" data-i="${i}">Remove</button></div>`).join("");
+    wrap.querySelectorAll("button[data-i]").forEach(b=>{
+      b.addEventListener("click", ()=>{ pendingAttachments.splice(Number(b.dataset.i),1); renderAttachList(); });
+    });
+  }
+  renderImagePreview();
+  renderAttachList();
+
+  const imageInput = document.getElementById("imageInput");
+  if(imageInput){
+    imageInput.addEventListener("change", async ()=>{
+      const f = imageInput.files[0];
+      if(!f) return;
+      pendingImage = await fileToDataUrl(f);
+      renderImagePreview();
+    });
+  }
+  const attachInput = document.getElementById("attachInput");
+  if(attachInput){
+    attachInput.addEventListener("change", async ()=>{
+      for(const f of Array.from(attachInput.files)){
+        const dataUrl = await fileToDataUrl(f);
+        pendingAttachments.push({id:uid(), name:f.name, mime:f.type, size:f.size, dataUrl});
+      }
+      attachInput.value = "";
+      renderAttachList();
+    });
+  }
+
+  document.getElementById("btnCancel").addEventListener("click", closeForm);
+  document.getElementById("entityForm").addEventListener("submit", async (ev)=>{
+    ev.preventDefault();
+    const fd = new FormData(ev.target);
+    const entity = existing ? {...existing} : {id:uid(), type, createdAt:Date.now()};
+    fields.forEach(f=>{
+      if(["textarea","select","text","url","locationSelect"].includes(f.type) || !f.type){
+        entity[f.key] = (fd.get(f.key) || "").toString();
+      }
+    });
+    entity.image = pendingImage;
+    entity.attachments = pendingAttachments;
+    entity.comments = entity.comments || [];
+    entity.updatedAt = Date.now();
+    await dbPut(entity);
+    const idx = state.entities.findIndex(e=>e.id===entity.id);
+    if(idx>=0) state.entities[idx]=entity; else state.entities.push(entity);
+    closeForm();
+    toast("Saved.");
+    location.hash = `#/entity/${entity.id}`;
+  });
+}
+function closeForm(){ overlayEl.classList.remove("show"); modalEl.innerHTML=""; }
+overlayEl.addEventListener("click",(e)=>{ if(e.target===overlayEl) closeForm(); });
+
+/* ---------------- Toast ---------------- */
+let toastTimer=null;
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove("show"), 2200);
+}
+
+/* ---------------- Header actions ---------------- */
+document.getElementById("globalSearch").addEventListener("keydown",(e)=>{
+  if(e.key==="Enter"){
+    const q = e.target.value.trim();
+    if(q) location.hash = `#/search/${encodeURIComponent(q)}`;
+  }
+});
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify({exportedAt:new Date().toISOString(), entities: state.entities}, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `campaign-codex-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Backup downloaded.");
+});
+document.getElementById("btnImport").addEventListener("click", ()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", async (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  try{
+    const text = await f.text();
+    const data = JSON.parse(text);
+    const list = Array.isArray(data) ? data : (data.entities || []);
+    if(!Array.isArray(list)) throw new Error("Unrecognized file format.");
+    let count = 0;
+    for(const ent of list){
+      if(!ent.id || !ent.type || !TYPES[ent.type]) continue;
+      await dbPut(ent);
+      count++;
+    }
+    state.entities = await dbGetAll();
+    toast(`Imported ${count} entries.`);
+    render();
+  }catch(err){
+    alert("Couldn't read that file: " + err.message);
+  }
+  e.target.value = "";
+});
+document.getElementById("btnClear").addEventListener("click", async ()=>{
+  if(confirm("Delete ALL entries in this Codex? This cannot be undone. (Consider exporting a backup first.)")){
+    await dbClear();
+    state.entities = [];
+    location.hash = "#/";
+    toast("Everything cleared.");
+  }
+});
+
+/* ---------------- Seed example data on first run ---------------- */
+async function seedIfEmpty(){
+  const all = await dbGetAll();
+  if(all.length>0){ state.entities = all; return; }
+  const now = Date.now();
+  const npc = {id:uid(), type:"npc", name:"Elder Maris", subtitle:"Village Elder of Willowbrook", status:"Alive",
+    aliases:"", tags:"quest-giver, human",
+    content:"Elder Maris has led Willowbrook for thirty years. She is deeply worried about the recent disappearances near the Hollow Wood and has asked the party to investigate.",
+    image:null, attachments:[], createdAt:now, updatedAt:now};
+  const loc = {id:uid(), type:"location", name:"Willowbrook", subtitle:"Farming village, Greywood Vale",
+    aliases:"", tags:"town", parentId:"",
+    content:"A small farming village on the edge of the Hollow Wood. Home to about 200 people, led by Elder Maris.",
+    image:null, attachments:[], comments:[], createdAt:now, updatedAt:now};
+  const subloc = {id:uid(), type:"location", name:"The Old Mill", subtitle:"Landmark",
+    aliases:"", tags:"", parentId:loc.id,
+    content:"A disused mill at the edge of Willowbrook, said to be where the first villager vanished.",
+    image:null, attachments:[], comments:[], createdAt:now, updatedAt:now};
+  const quest = {id:uid(), type:"quest", name:"The Hollow Wood Disappearances", subtitle:"Elder Maris", status:"Active",
+    aliases:"", tags:"",
+    content:"Three villagers from Willowbrook have vanished near the Hollow Wood over the past month. Elder Maris has offered 50 gold to anyone who can find out what happened.",
+    image:null, attachments:[], comments:[], createdAt:now, updatedAt:now};
+  const item = {id:uid(), type:"item", name:"Lantern of the Hollow Wood", subtitle:"1, Uncommon",
+    aliases:"", tags:"magic item",
+    content:"A brass lantern found near the Old Mill. Its flame burns a pale green and never seems to go out.",
+    image:null, attachments:[], comments:[], createdAt:now, updatedAt:now};
+  const note = {id:uid(), type:"note", name:"How this works", subtitle:"Read me",
+    aliases:"", tags:"",
+    content:"This is an example note. Notice that \"Elder Maris\" and \"Willowbrook\" above turned into clickable links automatically, because entries with those names already exist. Locations can be nested (see The Old Mill under Willowbrook), and there's a Timeline tab that lines up your session Notes in order. Delete these examples any time from their own pages, or use \"Clear All\" in the header to start fresh.",
+    image:null, attachments:[], comments:[], createdAt:now, updatedAt:now};
+  for(const e of [npc, loc, subloc, quest, item, note]) await dbPut(e);
+  state.entities = await dbGetAll();
+}
+
+/* ---------------- Boot ---------------- */
+(async function boot(){
+  await seedIfEmpty();
+  route();
+})();
+
+/* ---------------- PWA install support ---------------- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{ /* fine if this fails when opened as a plain local file */ });
+  });
+}
+
+/* ---------------- Mobile swipe-back gesture ---------------- */
+(function(){
+  let touchStartX = null, touchStartY = null;
+  document.addEventListener("touchstart", (e)=>{
+    if (window.innerWidth > 820) { touchStartX = null; return; }
+    if (!e.touches || e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener("touchend", (e)=>{
+    if (touchStartX === null) return;
+    if (window.innerWidth > 820) { touchStartX = null; return; }
+    const t = e.changedTouches && e.changedTouches[0];
+    const dx = t ? t.clientX - touchStartX : 0;
+    const dy = t ? t.clientY - touchStartY : 0;
+    touchStartX = null;
+    if (dx > 70 && Math.abs(dy) < 60) {
+      const back = document.querySelector(".backToList");
+      if (back) back.click();
+    }
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
